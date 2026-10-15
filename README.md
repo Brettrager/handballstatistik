@@ -40,8 +40,8 @@ Notes:
   Re-enable under **Actions** with one click.
 - If a league fails to update, the other leagues are still published and the run is marked failed
   (GitHub sends an e-mail).
-- New season: update `season` and the `lid` of the individual leagues (M-LL-2-BW, mB-OL-2-BW) in
-  `leagues.json`; district leagues are discovered automatically.
+- New season: update `season` and the `lid` of the individual leagues (M-LL-2-BW, mB-OL-2-BW,
+  mB-BOL-1-SRM) in `leagues.json`; district leagues are discovered automatically.
 
 Viewers that don't run JavaScript (e.g. the iOS Mail/Files preview) get a pre-rendered,
 read-only fallback (scorers, standings, results). The interactive app replaces it when
