@@ -263,10 +263,17 @@ function barChart(items, {h = 180, stacks, colors, labels, grouped = false}) {
   });
   return out + `</svg><div class="legend">${labels.map((l, j) => `<span><i style="background:${colors[j]}"></i>${l}</span>`).join("")}</div>`;
 }
+function gameLen() {
+  if (L._len) return L._len;
+  let mx = 0;
+  for (const g of L.games) for (const e of g.events || []) mx = Math.max(mx, +e[0].split(":")[0]);
+  return (L._len = [40, 50, 60].find(x => mx <= x) || 60);
+}
 function scoreChart(g) {
+  const len = gameLen();
   const pts = [[0, 0, 0]];
   for (const e of g.events) if (e[1] != null) { const [m, s] = e[0].split(":").map(Number); pts.push([m + s / 60, e[1], e[2]]); }
-  const end = Math.max(60, pts[pts.length - 1][0]);
+  const end = Math.max(len, pts[pts.length - 1][0]);
   pts.push([end, g.hg, g.gg]);
   const w = 640, h = 220, pad = 30, maxD = Math.max(3, ...pts.map(p => Math.abs(p[1] - p[2])));
   const X = t => pad + t / end * (w - pad - 8), Y = d => h / 2 - d / maxD * (h / 2 - 14);
@@ -275,7 +282,8 @@ function scoreChart(g) {
   let out = `<svg viewBox="0 0 ${w} ${h + 20}" width="100%" role="img"><defs>
     <clipPath id="cTop"><rect x="0" y="0" width="${w}" height="${h / 2}"/></clipPath>
     <clipPath id="cBot"><rect x="0" y="${h / 2}" width="${w}" height="${h / 2}"/></clipPath></defs>`;
-  for (let m = 0; m <= end; m += 10) out += `<line x1="${X(m)}" x2="${X(m)}" y1="6" y2="${h - 6}" stroke="var(--line)" ${m === 30 ? 'stroke-dasharray="4 3" stroke-width="2"' : ""}/><text x="${X(m)}" y="${h + 12}" text-anchor="middle">${m}'</text>`;
+  for (let m = 0; m <= end; m += 10) out += `<line x1="${X(m)}" x2="${X(m)}" y1="6" y2="${h - 6}" stroke="var(--line)"/><text x="${X(m)}" y="${h + 12}" text-anchor="middle">${m}'</text>`;
+  out += `<line x1="${X(len / 2)}" x2="${X(len / 2)}" y1="6" y2="${h - 6}" stroke="var(--line)" stroke-dasharray="4 3" stroke-width="2"/>`;
   for (const d of [-maxD, 0, maxD]) out += `<text x="${pad - 6}" y="${Y(d) + 4}" text-anchor="end">${d > 0 ? "+" + d : d < 0 ? "+" + -d : 0}</text>`;
   out += `<line x1="${pad}" x2="${w - 8}" y1="${h / 2}" y2="${h / 2}" stroke="var(--muted)"/>`;
   const area = `${path} L${X(end)},${h / 2} L${X(0)},${h / 2} Z`;
@@ -285,12 +293,13 @@ function scoreChart(g) {
   return out + "</svg>";
 }
 function minuteBuckets(filterFn) {
-  const b = Array.from({length: 6}, (_, i) => ({label: `${i * 10 + 1}-${i * 10 + 10}'`, a: 0, b: 0}));
+  const n = gameLen() / 10;
+  const b = Array.from({length: n}, (_, i) => ({label: `${i * 10 + 1}-${i * 10 + 10}'`, a: 0, b: 0}));
   for (const g of played()) for (const e of g.events) {
     if (e[3] !== "goal" && e[3] !== "7m_goal") continue;
     const r = filterFn(g, e); if (!r) continue;
     const [m, s] = e[0].split(":").map(Number);
-    b[Math.min(5, Math.floor((m * 60 + s) / 600))][r]++;
+    b[Math.min(n - 1, Math.floor((m * 60 + s) / 600))][r]++;
   }
   return b;
 }
@@ -660,8 +669,12 @@ function notFound() { $("#app").innerHTML = `<div class="panel empty">Seite nich
 // ---------- routing / chrome ----------
 const LIST_VIEWS = ["spieler", "tabelle", "spiele", "liga"];
 const OWNER = {team: {}, player: {}, game: {}};   // entity id -> league
-const GENDER = {M: "Männer", F: "Frauen"};
-const leagueLabel = l => l.short.replace(/^[A-Za-z0-9]+-/, "").replace(/-[A-Z]+$/, "").replace(/^(\d)BK/, "$1. BK").replace(/-/g, " ");
+const GENDER = {M: "Männer", F: "Frauen", J: "Jugend"};
+const lgGroup = l => { const p = l.short.split("-")[0]; return p === "M" || p === "F" ? p : "J"; };
+const leagueLabel = l => {
+  const base = l.short.replace(/^[A-Za-z0-9]+-/, "").replace(/-[A-Z]+$/, "").replace(/^(\d)BK/, "$1. BK").replace(/-/g, " ");
+  return lgGroup(l) === "J" ? `${l.short.split("-")[0]} ${base}` : base;
+};
 function ownerOf(view, arg) {
   if (!arg) return null;
   if (view === "team") return OWNER.team[arg];
@@ -675,7 +688,7 @@ function renderLeagueNav(view) {
   if (DATA.leagues.length < 2) { nav.style.display = "none"; return; }
   const target = LIST_VIEWS.includes(view) ? view : "spieler";
   const groups = {};
-  for (const l of DATA.leagues) (groups[l.short.split("-")[0]] ??= []).push(l);
+  for (const g of Object.keys(GENDER)) for (const l of DATA.leagues) if (lgGroup(l) === g) (groups[g] ??= []).push(l);
   nav.innerHTML = Object.entries(groups).map(([g, ls]) => `<div class="lgrow"><b>${esc(GENDER[g] || g)}</b>${ls.map(l => {
     const fav = l.teams.some(t => state.favs.has(t.id));
     return `<a href="#/${encodeURIComponent(l.short)}/${target}" class="${l === L ? "active" : ""} ${fav ? "hasfav" : ""}" title="${esc(l.name)}">${esc(leagueLabel(l))}</a>`;
@@ -705,7 +718,7 @@ function initSearch() {
   const teamOf = Object.fromEntries(allTeams.map(x => [x.t.id, x.t]));
   const allPlayers = DATA.leagues.flatMap(l => l.players.map(p => ({p, l})));
   const multi = DATA.leagues.length > 1;
-  const lgTag = l => multi ? ` · ${esc(GENDER[l.short.split("-")[0]]?.[0] || "")} ${esc(leagueLabel(l))}` : "";
+  const lgTag = l => multi ? ` · ${lgGroup(l) === "J" ? "" : GENDER[lgGroup(l)][0] + " "}${esc(leagueLabel(l))}` : "";
   const byCurrent = (a, b) => (b.l === L) - (a.l === L);
   let idx = -1;
   q.addEventListener("input", () => {

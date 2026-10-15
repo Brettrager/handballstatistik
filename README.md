@@ -40,8 +40,8 @@ Notes:
   Re-enable under **Actions** with one click.
 - If a league fails to update, the other leagues are still published and the run is marked failed
   (GitHub sends an e-mail).
-- New season: update `season` and the `lid` of the individual league (M-LL-2-BW) in `leagues.json`;
-  district leagues are discovered automatically.
+- New season: update `season` and the `lid` of the individual leagues (M-LL-2-BW, mB-OL-2-BW) in
+  `leagues.json`; district leagues are discovered automatically.
 
 Viewers that don't run JavaScript (e.g. the iOS Mail/Files preview) get a pre-rendered,
 read-only fallback (scorers, standings, results). The interactive app replaces it when
@@ -79,13 +79,15 @@ JavaScript is available.
   portal URL) are discovered automatically each run and filtered by short-name prefix
   (case-sensitive; currently all men's/women's leagues except the cups, i.e. no youth or M40).
   League IDs change every season, so this keeps working without edits.
-- `leagues`: individual leagues (`lid` from `.../league?ogId=216&lId=167301`).
+- `leagues`: individual leagues (`lid` from `.../league?ogId=216&lId=167301`), e.g. M-LL-2-BW and the
+  youth league mB-OL-2-BW. Youth leagues get their own "Jugend" row in the navigation; the game length
+  (40/50/60 min) is detected from the reports, so charts adapt automatically.
 
 Leagues that are no longer configured are removed from the database on the next run.
 
 ## Site navigation
 
-- League bar (Männer / Frauen) in the header; a ★ marks leagues that contain a favourite team.
+- League bar (Männer / Frauen / Jugend) in the header; a ★ marks leagues that contain a favourite team.
 - URLs carry the league, e.g. `#/M-BL-2-SRM/tabelle`, so links can be shared. Team, player and game
   links (`#/team/…`, `#/player/…`, `#/game/…`) switch to the right league automatically.
 - The search box finds players and teams across all leagues.
