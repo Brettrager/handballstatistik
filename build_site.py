@@ -106,15 +106,15 @@ def _static_league(lg: dict, e) -> str:
         f"<td>{t['gf'] or 0}:{t['ga'] or 0}</td><td class='sortcol'>{t['pp'] or 0}:{t['pm'] or 0}</td></tr>"
         for t in lg["teams"]]
     grow = [
-        f"<tr><td>{_fdate(g['date'])}</td><td class='name'>{e(tshort(g['home']))} ? {e(tshort(g['guest']))}</td>"
+        f"<tr><td>{_fdate(g['date'])}</td><td class='name'>{e(tshort(g['home']))} – {e(tshort(g['guest']))}</td>"
         f"<td><b>{g['hg']}:{g['gg']}</b> <span class='tm'>({g['hh']}:{g['gh']})</span></td></tr>"
         for g in reversed(lg["games"]) if g["hg"] is not None]
     n = sum(1 for g in lg["games"] if g.get("parsed"))
     return f"""<section id="lg-{e(lg['short'])}">
 <h1>{e(lg['name'])} <span class="muted">{e(lg['season'])}</span></h1>
-<div class="chips"><span class="chip">{e(lg['short'])}</span><span class="chip">{e(lg['area'])}</span><span class="chip">{n} Spiele ausgewertet</span><span class="chip"><a href="#top">? Ligen</a></span></div>
-<h2>Torsch?tzen</h2>
-<div class="tablewrap"><table><thead><tr><th>#</th><th class="name">Spieler</th><th>Sp</th><th>Tore</th><th>?</th><th>Feld</th><th>7m</th><th>2'</th><th>Verw.</th><th>Disq.</th></tr></thead>
+<div class="chips"><span class="chip">{e(lg['short'])}</span><span class="chip">{e(lg['area'])}</span><span class="chip">{n} Spiele ausgewertet</span><span class="chip"><a href="#top">↑ Ligen</a></span></div>
+<h2>Torschützen</h2>
+<div class="tablewrap"><table><thead><tr><th>#</th><th class="name">Spieler</th><th>Sp</th><th>Tore</th><th>Ø</th><th>Feld</th><th>7m</th><th>2'</th><th>Verw.</th><th>Disq.</th></tr></thead>
 <tbody>{''.join(prow) or '<tr><td colspan="10" class="name">Noch keine Spielberichte.</td></tr>'}</tbody></table></div>
 <h2>Tabelle</h2>
 <div class="tablewrap"><table><thead><tr><th>#</th><th class="name">Mannschaft</th><th>Sp</th><th>S</th><th>U</th><th>N</th><th>Tore</th><th>Punkte</th></tr></thead>
@@ -134,8 +134,8 @@ def static_html(data: dict) -> str:
     if len(leagues) > 1:
         index = '<div class="chips" id="top">' + "".join(
             f'<span class="chip"><a href="#lg-{e(lg["short"])}">{e(lg["name"])}</a></span>' for lg in leagues) + "</div>"
-    return f"""<div class="nojs-note">Vereinfachte Ansicht (Stand: {stand}): Diese Vorschau f?hrt kein JavaScript aus (z.&nbsp;B. Mail- oder Dateien-App auf dem iPhone).
-Sortierung, Filter sowie Spieler-, Team- und Spielseiten gibt es, wenn die Seite in einem Browser ge?ffnet wird.</div>
+    return f"""<div class="nojs-note">Vereinfachte Ansicht (Stand: {stand}):     Diese Vorschau führt kein JavaScript aus (z.&nbsp;B. Mail- oder Dateien-App auf dem iPhone).
+    Sortierung, Filter sowie Spieler-, Team- und Spielseiten gibt es, wenn die Seite in einem Browser geöffnet wird.</div>
 {index}
 {''.join(_static_league(lg, e) for lg in leagues)}"""
 
@@ -156,7 +156,7 @@ def main() -> None:
         shutil.copy2(f, out_dir / f.name)
     (out_dir / "manifest.webmanifest").write_text(json.dumps({
         "name": "Handball Statistiken", "short_name": "HB Stats", "start_url": "./", "display": "standalone",
-        "background_color": "#121417", "theme_color": "#1a1d22",
+        "background_color": "#1e6fd9", "theme_color": "#1a1d22",
         "icons": [{"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
                   {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"}],
     }, indent=1), encoding="utf-8")
