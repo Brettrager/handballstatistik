@@ -1,0 +1,19 @@
+{
+  "season": "2026/27",
+  "leagues": [
+    {
+      "og": 216,
+      "lid": 161166,
+      "area": "Baden-Württemberg"
+    }
+  ],
+  "districts": [
+    {
+      "og": 216,
+      "o": 251,
+      "area": "Stuttgart-Rems-Murr",
+      "include": ["M-", "F-"],
+      "exclude": ["M-Pok", "F-Pok"]
+    }
+  ]
+}

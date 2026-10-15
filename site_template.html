@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="de" class="nojs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Handball Statistiken</title>
+<meta name="theme-color" content="#1a1d22">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="HB Stats">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤾</text></svg>">
+<style>
+:root{
+  --bg:#121417;--bg2:#1a1d22;--card:#20242b;--line:#2e333b;--text:#e8eaed;--muted:#9aa1ab;
+  --accent:#f5a623;--accent2:#ffcf70;--win:#3fb950;--draw:#d29922;--loss:#f85149;--home:#58a6ff;--guest:#f78166;
+  --fav:rgba(245,166,35,.12);--shadow:0 1px 3px rgba(0,0,0,.4);
+}
+:root.light{
+  --bg:#f4f5f7;--bg2:#ffffff;--card:#ffffff;--line:#dfe2e6;--text:#1c1f24;--muted:#5f6670;
+  --accent:#c77700;--accent2:#995c00;--fav:rgba(245,166,35,.16);--shadow:0 1px 3px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:inherit;text-decoration:none}
+a.link{color:var(--accent2)} a.link:hover{text-decoration:underline}
+button,select,input{font:inherit;color:inherit}
+header.top{position:sticky;top:0;z-index:20;background:var(--bg2);border-bottom:1px solid var(--line);box-shadow:var(--shadow)}
+.top-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:10px 16px;flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:.5px;font-size:18px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.brand span{color:var(--accent)}
+.search{position:relative;flex:1;min-width:180px;max-width:420px}
+.search input{width:100%;padding:8px 12px 8px 32px;border-radius:8px;border:1px solid var(--line);background:var(--bg)}
+.search:before{content:"⌕";position:absolute;left:10px;top:5px;color:var(--muted);font-size:18px}
+.suggest{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:8px;margin-top:4px;box-shadow:var(--shadow);max-height:360px;overflow:auto;display:none}
+.suggest a{display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line)}
+.suggest a:hover,.suggest a.active{background:var(--fav)}
+.suggest small{color:var(--muted)}
+.iconbtn{background:none;border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+.iconbtn:hover{border-color:var(--accent)}
+nav.leagues{max-width:1280px;margin:0 auto;padding:0 16px 8px;display:flex;flex-direction:column;gap:6px}
+.lgrow{display:flex;gap:6px;align-items:center;overflow-x:auto;scrollbar-width:none}
+.lgrow::-webkit-scrollbar{display:none}
+.lgrow b{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);min-width:58px;flex:none}
+.lgrow a{padding:3px 11px;border:1px solid var(--line);border-radius:999px;font-size:12px;white-space:nowrap;color:var(--muted);flex:none}
+.lgrow a:hover{border-color:var(--accent);color:var(--text)}
+.lgrow a.active{background:var(--accent);border-color:var(--accent);color:#16181c;font-weight:700}
+.lgrow a.hasfav:after{content:" ★";color:var(--accent)}
+.lgrow a.active.hasfav:after{color:#16181c}
+nav.tabs{max-width:1280px;margin:0 auto;display:flex;gap:4px;padding:0 16px;overflow-x:auto}
+nav.tabs a{padding:10px 14px;border-bottom:3px solid transparent;color:var(--muted);white-space:nowrap;font-weight:600}
+nav.tabs a.active{color:var(--text);border-color:var(--accent)}
+@media(max-width:640px){header.top{position:static}}
+main{max-width:1280px;margin:0 auto;padding:18px 16px 60px}
+h1{font-size:26px;margin:4px 0 2px;letter-spacing:.3px}
+h2{font-size:18px;margin:26px 0 10px}
+.sub{color:var(--muted);margin-bottom:14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px;min-width:0}
+h1{overflow-wrap:anywhere}
+.chip{border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:12px;color:var(--muted);max-width:100%;overflow-wrap:anywhere}
+.chip a{color:var(--accent2)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:10px 0 6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)}
+.card .k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+.card .v{font-size:24px;font-weight:700;margin-top:2px}
+.card .d{color:var(--muted);font-size:12px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;box-shadow:var(--shadow)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media(max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 10px}
+.toolbar input,.toolbar select{padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg2)}
+.toolbar label{color:var(--muted);font-size:12px;display:flex;align-items:center;gap:6px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{background:var(--bg2);border:0;padding:7px 11px;cursor:pointer;color:var(--muted)}
+.seg button.on{background:var(--accent);color:#111;font-weight:600}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--card);box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{position:sticky;top:0;background:var(--bg2);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;user-select:none;z-index:1}
+th[data-k]:not([data-k=""]){cursor:pointer}
+th.l,td.l{text-align:left}
+th.sorted{color:var(--accent)}
+th.sorted:after{content:" ▾"} th.sorted.asc:after{content:" ▴"}
+th[title]{text-decoration:underline dotted var(--line)}
+td.sortcol{background:rgba(245,166,35,.07);font-weight:600}
+tbody tr:hover{background:rgba(127,127,127,.08)}
+tr.fav{background:var(--fav)}
+tfoot td{font-weight:700;background:var(--bg2);border-top:2px solid var(--line)}
+td.name a{font-weight:600}
+td .tm{color:var(--muted);font-size:12px}
+.muted{color:var(--muted)}
+.res{display:inline-block;min-width:22px;text-align:center;border-radius:5px;padding:1px 6px;font-weight:700;font-size:12px;color:#fff}
+.res.S{background:var(--win)}.res.U{background:var(--draw)}.res.N{background:var(--loss)}
+.score{font-weight:700;font-size:15px}
+.games .g{display:grid;grid-template-columns:120px 1fr 80px 1fr 40px;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line)}
+.games .g:hover{background:rgba(127,127,127,.08)}
+.games .g .h{text-align:right}
+.games .g .s{text-align:center}
+.games .g.fav{background:var(--fav)}
+.games .day{padding:8px 12px;background:var(--bg2);color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--line)}
+@media(max-width:640px){.games .g{grid-template-columns:1fr 64px 1fr;font-size:13px}.games .g .t,.games .g .r{display:none}}
+.win{font-weight:700}
+.scoreboard{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:16px;align-items:center;text-align:center;padding:18px}
+.scoreboard .team{overflow-wrap:anywhere}
+@media(max-width:640px){.panel.scoreboard{gap:8px;padding:12px}.panel.scoreboard .big{font-size:32px}.panel.scoreboard .team{font-size:15px}}
+.scoreboard .big{font-size:44px;font-weight:800;letter-spacing:2px}
+.scoreboard .team{font-size:18px;font-weight:700}
+.timeline{max-height:520px;overflow:auto}
+.ev{display:grid;grid-template-columns:52px 60px 1fr;gap:8px;padding:5px 8px;border-bottom:1px solid var(--line);font-size:13px}
+.ev.home{border-left:3px solid var(--home)} .ev.guest{border-left:3px solid var(--guest)}
+.ev .t{color:var(--muted)} .ev .sc{font-weight:700;text-align:center}
+.badge{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;margin-left:4px;font-weight:700}
+.b-2min{background:#6e40c9;color:#fff}.b-warn{background:#d29922;color:#111}.b-disq{background:#f85149;color:#fff}.b-7m{background:#1f6feb;color:#fff}.b-miss{background:#57606a;color:#fff}.b-to{background:#30363d;color:#fff}
+svg text{fill:var(--muted);font-size:11px}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.cmpbar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--accent);color:#111;padding:10px 18px;border-radius:999px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.4);display:none;gap:12px;align-items:center;z-index:30}
+.cmpbar button{background:#111;color:#fff;border:0;border-radius:999px;padding:5px 12px;cursor:pointer}
+.star{cursor:pointer;color:var(--muted);font-size:18px;background:none;border:0}
+.star.on{color:var(--accent)}
+.best{color:var(--accent);font-weight:800}
+footer{max-width:1280px;margin:0 auto;padding:20px 16px 40px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
+input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;cursor:pointer}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+.form{display:inline-flex;gap:3px}
+.small{font-size:12px}
+.records td{text-align:left;white-space:normal}
+.records td:first-child{color:var(--muted);width:42%}
+.nojs .search,.nojs #themeBtn,.nojs .tabs,.nojs .leagues,.nojs .cmpbar{display:none}
+.nojs-note{margin:14px 0;padding:10px 14px;border:1px solid var(--accent);border-radius:10px;background:var(--fav);font-size:13px}
+.nojs td.name,.nojs th.name{text-align:left;white-space:normal}
+.nojs th,.nojs td{padding:6px 7px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="#/spieler" id="brand">🤾 Handball <span>Statistiken</span></a>
+    <div class="search"><input id="q" placeholder="Spieler oder Mannschaft suchen…" autocomplete="off"><div class="suggest" id="suggest"></div></div>
+    <button class="iconbtn" id="themeBtn" title="Hell/Dunkel umschalten">◐</button>
+  </div>
+  <nav class="leagues" id="leagues"></nav>
+  <nav class="tabs" id="tabs">
+    <a href="#/spieler" data-tab="spieler">Spieler</a>
+    <a href="#/tabelle" data-tab="tabelle">Tabelle</a>
+    <a href="#/spiele" data-tab="spiele">Spiele</a>
+    <a href="#/liga" data-tab="liga">Ligastatistik</a>
+  </nav>
+</header>
+<main id="app"><!--__STATIC__--></main>
+<div class="cmpbar" id="cmpbar"><span id="cmpcount"></span><button id="cmpgo">Vergleichen</button><button id="cmpclear">✕</button></div>
+<footer id="foot"></footer>
+<script>
+const DATA = /*__DATA__*/null;
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt1 = n => (Math.round(n * 100) / 100).toLocaleString("de-DE", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const pct = (a, b) => b ? Math.round(100 * a / b) + " %" : "–";
+const WD = ["So","Mo","Di","Mi","Do","Fr","Sa"];
+const fdate = (d, wd=true) => { if (!d) return ""; const [y,m,dd] = d.split("-"); const w = WD[new Date(d + "T12:00").getDay()]; return (wd ? w + ", " : "") + `${dd}.${m}.${y.slice(2)}`; };
+const store = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem("hs_" + k)) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("hs_" + k, JSON.stringify(v)); } catch {} }
+};
+
+let L, T, P, G;          // current league, teams by id, players by id, games by id
+const state = {
+  sort: {key: "goals", asc: false}, team: "", period: "all", minGames: 0, q: "", perGame: false,
+  compare: new Set(), favs: new Set(store.get("favs", [])),
+};
+
+function setLeague(key) {
+  L = DATA.leagues.find(l => l.key === key) || DATA.leagues[0];
+  T = Object.fromEntries(L.teams.map(t => [t.id, t]));
+  P = Object.fromEntries(L.players.map(p => [p.id, p]));
+  G = Object.fromEntries(L.games.map(g => [g.id, g]));
+  // Hin-/Rückrunde: the first meeting of a pairing belongs to the first half of the season
+  const seen = new Set();
+  for (const g of L.games) { const k = [g.home, g.guest].sort().join("|"); g.round = seen.has(k) ? 2 : 1; seen.add(k); }
+  state.compare.clear();
+  store.set("league", L.key);
+}
+const played = () => L.games.filter(g => g.parsed);
+const teamName = id => T[id]?.name ?? "?";
+const teamLink = (id, short=false) => `<a class="link" href="#/team/${id}">${esc(short ? T[id]?.short : teamName(id))}</a>`;
+const playerLink = id => `<a href="#/player/${id}">${esc(P[id]?.name)}</a>`;
+const resultFor = (g, teamId) => { const my = g.home === teamId ? g.hg : g.gg, op = g.home === teamId ? g.gg : g.hg; return my > op ? "S" : my < op ? "N" : "U"; };
+
+// ---------- aggregation ----------
+function gamesInPeriod(period) {
+  const games = played();
+  if (period === "home" || period === "away" || period === "all") return games;
+  if (period === "r1") return games.filter(g => g.round === 1);
+  if (period === "r2") return games.filter(g => g.round === 2);
+  if (period === "last3") {
+    const keep = new Set();
+    for (const t of L.teams) games.filter(g => g.home === t.id || g.guest === t.id).slice(-3).forEach(g => keep.add(g.id + "|" + t.id));
+    return games.map(g => ({...g, _keep: keep}));
+  }
+  return games;
+}
+function aggregate(period = "all") {
+  const s = {};
+  const games = gamesInPeriod(period);
+  for (const g of games) {
+    for (const side of ["home", "guest"]) {
+      const tid = g[side];
+      if (period === "home" && side !== "home") continue;
+      if (period === "away" && side !== "guest") continue;
+      if (g._keep && !g._keep.has(g.id + "|" + tid)) continue;
+      for (const a of g.lineups[side]) {
+        const x = s[a.p] ??= {id: a.p, team: tid, games: 0, goals: 0, sa: 0, sg: 0, warn: 0, pen: 0, disq: 0, best: 0, nums: new Set()};
+        x.games++; x.goals += a.g; x.sa += a.sa; x.sg += a.sg; x.warn += a.w; x.pen += a.pen; x.disq += a.d;
+        x.best = Math.max(x.best, a.g); x.nums.add(a.nr);
+      }
+    }
+  }
+  // goals in the team's most recent game ("aktuell")
+  const lastByTeam = {};
+  for (const g of played()) { lastByTeam[g.home] = g; lastByTeam[g.guest] = g; }
+  for (const x of Object.values(s)) {
+    x.field = x.goals - x.sg; x.avg = x.games ? x.goals / x.games : 0; x.favg = x.games ? x.field / x.games : 0;
+    x.spct = x.sa ? x.sg / x.sa : -1;
+    const lg = lastByTeam[x.team]; const side = lg && (lg.home === x.team ? "home" : "guest");
+    const a = lg && lg.lineups[side].find(v => v.p === x.id);
+    x.last = a ? a.g : null;
+  }
+  return s;
+}
+
+// ---------- charts ----------
+function barChart(items, {h = 180, stacks, colors, labels, grouped = false}) {
+  const w = Math.max(520, items.length * (grouped ? 56 : 34)), pad = 26, top = 16;
+  const max = Math.max(1, ...items.map(i => grouped ? Math.max(...stacks.map(k => i[k])) : stacks.reduce((a, k) => a + i[k], 0)));
+  const bw = (w - pad - 10) / items.length;
+  let out = `<svg viewBox="0 -${top} ${w} ${h + 34 + top}" width="100%" role="img">`;
+  for (let v = 0; v <= max; v += Math.max(1, Math.ceil(max / 5))) {
+    const y = h - v / max * (h - 10);
+    out += `<line x1="${pad}" x2="${w}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${pad - 6}" y="${y + 4}" text-anchor="end">${v}</text>`;
+  }
+  items.forEach((it, i) => {
+    const x = pad + i * bw + 3;
+    if (grouped) {
+      const sw = (bw - 6) / stacks.length;
+      stacks.forEach((k, j) => {
+        const bh = it[k] / max * (h - 10), sx = x + j * sw;
+        out += `<rect x="${sx}" y="${h - bh}" width="${sw - 2}" height="${bh}" fill="${colors[j]}" rx="2"><title>${it[k]} ${labels[j]}</title></rect>`;
+        if (it[k]) out += `<text x="${sx + (sw - 2) / 2}" y="${h - bh - 4}" text-anchor="middle" style="fill:var(--text)">${it[k]}</text>`;
+      });
+    } else {
+      let y = h;
+      stacks.forEach((k, j) => {
+        const bh = it[k] / max * (h - 10);
+        if (bh > 0) out += `<rect x="${x}" y="${y - bh}" width="${bw - 6}" height="${bh}" fill="${colors[j]}" rx="2"><title>${it.title ? esc(it.title) + ": " : ""}${it[k]} ${labels[j]}</title></rect>`;
+        y -= bh;
+      });
+      const total = stacks.reduce((a, k) => a + it[k], 0);
+      if (total) out += `<text x="${x + (bw - 6) / 2}" y="${y - 4}" text-anchor="middle" style="fill:var(--text);font-weight:700">${total}</text>`;
+    }
+    out += `<text x="${x + (bw - 6) / 2}" y="${h + 16}" text-anchor="middle">${esc(it.label)}</text>`;
+  });
+  return out + `</svg><div class="legend">${labels.map((l, j) => `<span><i style="background:${colors[j]}"></i>${l}</span>`).join("")}</div>`;
+}
+function scoreChart(g) {
+  const pts = [[0, 0, 0]];
+  for (const e of g.events) if (e[1] != null) { const [m, s] = e[0].split(":").map(Number); pts.push([m + s / 60, e[1], e[2]]); }
+  const end = Math.max(60, pts[pts.length - 1][0]);
+  pts.push([end, g.hg, g.gg]);
+  const w = 640, h = 220, pad = 30, maxD = Math.max(3, ...pts.map(p => Math.abs(p[1] - p[2])));
+  const X = t => pad + t / end * (w - pad - 8), Y = d => h / 2 - d / maxD * (h / 2 - 14);
+  let path = `M${X(0)},${Y(0)}`;
+  for (let i = 1; i < pts.length; i++) path += ` L${X(pts[i][0])},${Y(pts[i - 1][1] - pts[i - 1][2])} L${X(pts[i][0])},${Y(pts[i][1] - pts[i][2])}`;
+  let out = `<svg viewBox="0 0 ${w} ${h + 20}" width="100%" role="img"><defs>
+    <clipPath id="cTop"><rect x="0" y="0" width="${w}" height="${h / 2}"/></clipPath>
+    <clipPath id="cBot"><rect x="0" y="${h / 2}" width="${w}" height="${h / 2}"/></clipPath></defs>`;
+  for (let m = 0; m <= end; m += 10) out += `<line x1="${X(m)}" x2="${X(m)}" y1="6" y2="${h - 6}" stroke="var(--line)" ${m === 30 ? 'stroke-dasharray="4 3" stroke-width="2"' : ""}/><text x="${X(m)}" y="${h + 12}" text-anchor="middle">${m}'</text>`;
+  for (const d of [-maxD, 0, maxD]) out += `<text x="${pad - 6}" y="${Y(d) + 4}" text-anchor="end">${d > 0 ? "+" + d : d < 0 ? "+" + -d : 0}</text>`;
+  out += `<line x1="${pad}" x2="${w - 8}" y1="${h / 2}" y2="${h / 2}" stroke="var(--muted)"/>`;
+  const area = `${path} L${X(end)},${h / 2} L${X(0)},${h / 2} Z`;
+  out += `<path d="${area}" fill="var(--home)" opacity=".35" clip-path="url(#cTop)"/><path d="${area}" fill="var(--guest)" opacity=".35" clip-path="url(#cBot)"/>`;
+  out += `<path d="${path}" fill="none" stroke="var(--text)" stroke-width="1.5"/>`;
+  out += `<text x="${pad + 4}" y="16" style="fill:var(--home);font-weight:700">${esc(T[g.home]?.short)} führt</text><text x="${pad + 4}" y="${h - 8}" style="fill:var(--guest);font-weight:700">${esc(T[g.guest]?.short)} führt</text>`;
+  return out + "</svg>";
+}
+function minuteBuckets(filterFn) {
+  const b = Array.from({length: 6}, (_, i) => ({label: `${i * 10 + 1}-${i * 10 + 10}'`, a: 0, b: 0}));
+  for (const g of played()) for (const e of g.events) {
+    if (e[3] !== "goal" && e[3] !== "7m_goal") continue;
+    const r = filterFn(g, e); if (!r) continue;
+    const [m, s] = e[0].split(":").map(Number);
+    b[Math.min(5, Math.floor((m * 60 + s) / 600))][r]++;
+  }
+  return b;
+}
+
+// ---------- views ----------
+const views = {};
+const COLS = [
+  {k: "rank", t: "#", cls: "l", nosort: true},
+  {k: "cmp", t: "", cls: "l", nosort: true},
+  {k: "name", t: "Name", cls: "l"},
+  {k: "team", t: "Mannschaft", cls: "l"},
+  {k: "games", t: "Sp", title: "Spiele"},
+  {k: "goals", t: "Tore", title: "Tore gesamt"},
+  {k: "avg", t: "Ø", title: "Tore pro Spiel"},
+  {k: "field", t: "Feld", title: "Feldtore"},
+  {k: "favg", t: "Feld Ø", title: "Feldtore pro Spiel"},
+  {k: "sg", t: "7m", title: "Siebenmeter-Tore"},
+  {k: "sa", t: "7m ges.", title: "Siebenmeter geworfen"},
+  {k: "spct", t: "7m %", title: "Siebenmeter-Quote"},
+  {k: "pen", t: "2'", title: "Zeitstrafen"},
+  {k: "warn", t: "Verw.", title: "Verwarnungen (Gelb)"},
+  {k: "disq", t: "Disq.", title: "Disqualifikationen (Rot)"},
+  {k: "best", t: "Max", title: "Meiste Tore in einem Spiel"},
+  {k: "last", t: "Aktuell", title: "Tore im letzten Spiel der Mannschaft"},
+];
+function sortPlayers(list, {key, asc}) {
+  const val = x => key === "name" ? P[x.id].name : key === "team" ? teamName(x.team) : (x[key] ?? -1);
+  return list.sort((a, b) => {
+    const va = val(a), vb = val(b);
+    const c = typeof va === "string" ? va.localeCompare(vb, "de") : va - vb;
+    return (asc ? c : -c) || b.goals - a.goals || a.games - b.games || P[a.id].name.localeCompare(P[b.id].name, "de");
+  });
+}
+function cell(x, k, sortKey) {
+  const cls = k === sortKey ? ' class="sortcol"' : "";
+  switch (k) {
+    case "name": return `<td class="l name">${playerLink(x.id)} <span class="tm">#${[...x.nums].join("/")}</span></td>`;
+    case "team": return `<td class="l">${teamLink(x.team, true)}</td>`;
+    case "avg": case "favg": return `<td${cls}>${fmt1(x[k])}</td>`;
+    case "spct": return `<td${cls}>${x.sa ? pct(x.sg, x.sa) : "–"}</td>`;
+    case "last": return `<td${cls}>${x.last ?? "–"}</td>`;
+    default: return `<td${cls}>${x[k]}</td>`;
+  }
+}
+function playerTable(list, {showTeam = true, totals = true, id = "pt"} = {}) {
+  const cols = COLS.filter(c => showTeam || c.k !== "team");
+  const {key, asc} = state.sort;
+  let html = `<div class="tablewrap"><table id="${id}"><thead><tr>${cols.map(c => `<th class="${c.cls || ""} ${c.k === key ? "sorted" + (asc ? " asc" : "") : ""}" data-k="${c.nosort ? "" : c.k}" ${c.title ? `title="${c.title}"` : ""}>${c.t}</th>`).join("")}</tr></thead><tbody>`;
+  if (!list.length) html += `<tr><td colspan="${cols.length}" class="empty">Keine Spieler gefunden.</td></tr>`;
+  let rank = 0, prev = null;
+  list.forEach((x, i) => {
+    const v = x[key]; if (v !== prev) rank = i + 1; prev = v;
+    html += `<tr class="${state.favs.has(x.team) ? "fav" : ""}">` + cols.map(c =>
+      c.k === "rank" ? `<td class="l muted">${["name", "team"].includes(key) ? i + 1 : rank}</td>` :
+      c.k === "cmp" ? `<td class="l"><input type="checkbox" data-cmp="${x.id}" ${state.compare.has(x.id) ? "checked" : ""} title="Zum Vergleich auswählen"></td>` :
+      cell(x, c.k, key)).join("") + "</tr>";
+  });
+  html += "</tbody>";
+  if (totals && list.length) {
+    const sum = k => list.reduce((a, x) => a + x[k], 0);
+    const t = {goals: sum("goals"), field: sum("field"), sg: sum("sg"), sa: sum("sa"), pen: sum("pen"), warn: sum("warn"), disq: sum("disq")};
+    html += `<tfoot><tr>${cols.map(c => c.k === "name" ? `<td class="l">Gesamt (${list.length} Spieler)</td>` : c.k === "spct" ? `<td>${pct(t.sg, t.sa)}</td>` : `<td>${t[c.k] ?? ""}</td>`).join("")}</tr></tfoot>`;
+  }
+  return html + "</table></div>";
+}
+function bindTable(root, rerender) {
+  root.querySelectorAll("th[data-k]").forEach(th => th.dataset.k && th.addEventListener("click", () => {
+    const k = th.dataset.k;
+    state.sort = state.sort.key === k ? {key: k, asc: !state.sort.asc} : {key: k, asc: k === "name" || k === "team"};
+    rerender();
+  }));
+  root.querySelectorAll("input[data-cmp]").forEach(cb => cb.addEventListener("change", () => {
+    const id = +cb.dataset.cmp;
+    if (cb.checked) { if (state.compare.size >= 4) { cb.checked = false; alert("Maximal 4 Spieler vergleichen."); return; } state.compare.add(id); }
+    else state.compare.delete(id);
+    updateCmpBar();
+  }));
+}
+function updateCmpBar() {
+  const n = state.compare.size, bar = $("#cmpbar");
+  bar.style.display = n ? "flex" : "none";
+  $("#cmpcount").textContent = `${n} Spieler ausgewählt`;
+}
+
+function leagueHeader(title) {
+  const n = played().length, total = L.games.length;
+  return `<h1>${esc(title || L.name)} <span class="muted">${esc(L.season)}</span></h1>
+  <div class="chips"><span class="chip">${esc(L.short)}</span><span class="chip">${esc(L.area)}</span>
+  <span class="chip">${n} / ${total} Spiele ausgewertet</span><span class="chip">${esc(L.actualized || "")}</span>
+  ${L.portal ? `<span class="chip"><a href="${esc(L.portal)}" target="_blank" rel="noopener">handball4all ↗</a></span>` : ""}</div>`;
+}
+
+views.spieler = () => {
+  const app = $("#app");
+  const render = () => {
+    const s = aggregate(state.period);
+    const q = state.q.trim().toLowerCase();
+    let list = Object.values(s).filter(x => (!state.team || x.team === state.team) && x.games >= state.minGames && (!q || P[x.id].name.toLowerCase().includes(q)));
+    sortPlayers(list, state.sort);
+    const all = Object.values(aggregate("all"));
+    const top = (k, f = () => true) => { const m = Math.max(...all.filter(f).map(x => x[k])); return {v: m, who: all.filter(f).filter(x => x[k] === m)}; };
+    const tg = top("goals"), tf = top("field"), ts = top("sg"), tp = top("pen");
+    const goals = played().reduce((a, g) => a + g.hg + g.gg, 0);
+    const names = arr => arr.who.slice(0, 3).map(x => P[x.id].name).join(", ") + (arr.who.length > 3 ? " …" : "");
+    app.innerHTML = leagueHeader() + `
+      <div class="cards">
+        <div class="card"><div class="k">Top-Torschütze</div><div class="v">${tg.v}</div><div class="d" title="${esc(names(tg))}">${esc(names(tg))}</div></div>
+        <div class="card"><div class="k">Meiste Feldtore</div><div class="v">${tf.v}</div><div class="d" title="${esc(names(tf))}">${esc(names(tf))}</div></div>
+        <div class="card"><div class="k">Meiste 7m-Tore</div><div class="v">${ts.v}</div><div class="d" title="${esc(names(ts))}">${esc(names(ts))}</div></div>
+        <div class="card"><div class="k">Meiste Zeitstrafen</div><div class="v">${tp.v}</div><div class="d" title="${esc(names(tp))}">${esc(names(tp))}</div></div>
+        <div class="card"><div class="k">Tore / Spiel</div><div class="v">${played().length ? fmt1(goals / played().length) : "–"}</div><div class="d">${goals} Tore in ${played().length} Spielen</div></div>
+      </div>
+      <div class="toolbar">
+        <input id="fq" placeholder="Name filtern…" value="${esc(state.q)}">
+        <select id="fteam"><option value="">Alle Mannschaften</option>${[...L.teams].sort((a, b) => a.name.localeCompare(b.name, "de")).map(t => `<option value="${t.id}" ${state.team === t.id ? "selected" : ""}>${esc(t.name)}</option>`).join("")}</select>
+        <div class="seg" id="fperiod">${[["all", "Alle"], ["home", "Heim"], ["away", "Auswärts"], ["r1", "Hinrunde"], ["r2", "Rückrunde"], ["last3", "Letzte 3"]].map(([k, l]) => `<button data-v="${k}" class="${state.period === k ? "on" : ""}">${l}</button>`).join("")}</div>
+        <label>Min. Spiele <input id="fmin" type="number" min="0" max="40" value="${state.minGames}" style="width:64px"></label>
+        <button class="iconbtn" id="csv" title="Tabelle als CSV exportieren">⬇ CSV</button>
+      </div>
+      ${playerTable(list)}
+      <p class="muted small">Tipp: Spaltenköpfe zum Sortieren anklicken · Häkchen setzen, um bis zu 4 Spieler zu vergleichen · ★ auf einer Mannschaftsseite hebt deren Spieler hervor.</p>`;
+    bindTable(app, render);
+    $("#fq").addEventListener("input", e => { state.q = e.target.value; const pos = e.target.selectionStart; render(); const f = $("#fq"); f.focus(); f.setSelectionRange(pos, pos); });
+    $("#fteam").addEventListener("change", e => { state.team = e.target.value; render(); });
+    $("#fmin").addEventListener("change", e => { state.minGames = +e.target.value || 0; render(); });
+    $("#fperiod").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { state.period = b.dataset.v; render(); }));
+    $("#csv").addEventListener("click", () => exportCsv(list));
+  };
+  render();
+};
+
+function exportCsv(list) {
+  const head = ["Name", "Mannschaft", "Trikot", "Spiele", "Tore", "Tore pro Spiel", "Feldtore", "Feldtore pro Spiel", "7m Tore", "7m geworfen", "Zeitstrafen", "Verwarnungen", "Disqualifikationen"];
+  const lines = [head.join(";")].concat(list.map(x => [P[x.id].name, teamName(x.team), [...x.nums].join("/"), x.games, x.goals, fmt1(x.avg), x.field, fmt1(x.favg), x.sg, x.sa, x.pen, x.warn, x.disq].map(v => `"${String(v).replace(/"/g, '""')}"`).join(";")));
+  const blob = new Blob(["\ufeff" + lines.join("\r\n")], {type: "text/csv;charset=utf-8"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${L.short}_spieler.csv`; a.click();
+}
+
+function standingsTable(highlight) {
+  const rows = [...L.teams].sort((a, b) => (a.pos ?? 99) - (b.pos ?? 99) || (b.pp - b.pm) - (a.pp - a.pm) || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf);
+  const form = id => played().filter(g => g.home === id || g.guest === id).slice(-5).map(g => `<a href="#/game/${g.id}" class="res ${resultFor(g, id)}" title="${fdate(g.date)} ${esc(teamName(g.home))} – ${esc(teamName(g.guest))} ${g.hg}:${g.gg}">${resultFor(g, id)}</a>`).join("");
+  return `<div class="tablewrap"><table><thead><tr><th class="l">Pl.</th><th class="l">Mannschaft</th><th>Sp</th><th>S</th><th>U</th><th>N</th><th>Tore</th><th>Diff</th><th>Punkte</th><th class="l">Form</th></tr></thead><tbody>
+  ${rows.map((t, i) => `<tr class="${state.favs.has(t.id) || t.id === highlight ? "fav" : ""}"><td class="l muted">${t.pos ?? (i + 1)}</td><td class="l name">${teamLink(t.id)}</td><td>${t.played}</td><td>${t.won}</td><td>${t.draw}</td><td>${t.lost}</td><td>${t.gf}:${t.ga}</td><td>${t.gf - t.ga > 0 ? "+" : ""}${t.gf - t.ga}</td><td><b>${t.pp}:${t.pm}</b></td><td class="l"><span class="form">${form(t.id)}</span></td></tr>`).join("")}
+  </tbody></table></div><p class="muted small">Quelle Tabelle: handball4all (offizieller Stand). Formkurve = letzte 5 Spiele.</p>`;
+}
+views.tabelle = () => { $("#app").innerHTML = leagueHeader() + `<h2>Tabelle</h2>` + standingsTable(); };
+
+function gameRow(g, favTeam) {
+  const hasScore = g.hg != null && g.gg != null;
+  const hw = hasScore && g.hg > g.gg, gw = hasScore && g.gg > g.hg;
+  const isFav = state.favs.has(g.home) || state.favs.has(g.guest);
+  return `<a class="g ${isFav ? "fav" : ""}" href="${g.parsed ? "#/game/" + g.id : (g.report || "#/spiele")}" ${!g.parsed && g.report ? 'target="_blank"' : ""}>
+    <span class="t muted small">${g.time || ""} · Nr. ${g.no}</span>
+    <span class="h ${hw ? "win" : ""}">${esc(teamName(g.home))}</span>
+    <span class="s score">${hasScore ? `${g.hg}:${g.gg}` : `<span class="muted">– : –</span>`}${hasScore && g.hh != null ? `<div class="muted small" style="font-weight:400">(${g.hh}:${g.gh})</div>` : ""}</span>
+    <span class="${gw ? "win" : ""}">${esc(teamName(g.guest))}</span>
+    <span class="r muted" title="${g.parsed ? "Spielbericht ausgewertet" : "noch kein Spielbericht"}">${g.parsed ? "📊" : ""}</span></a>`;
+}
+function gameList(games) {
+  if (!games.length) return `<div class="panel empty">Keine Spiele.</div>`;
+  let html = `<div class="tablewrap games">`, day = null;
+  for (const g of games) { if (g.date !== day) { day = g.date; html += `<div class="day">${fdate(g.date)}</div>`; } html += gameRow(g); }
+  return html + "</div>";
+}
+views.spiele = () => {
+  const app = $("#app");
+  const st = state.games ??= {team: "", mode: "all"};
+  const render = () => {
+    let games = L.games.filter(g => !st.team || g.home === st.team || g.guest === st.team);
+    if (st.mode === "played") games = games.filter(g => g.hg != null);
+    if (st.mode === "open") games = games.filter(g => g.hg == null);
+    app.innerHTML = leagueHeader() + `<h2>Spielplan & Ergebnisse</h2>
+      <div class="toolbar"><select id="gteam"><option value="">Alle Mannschaften</option>${[...L.teams].sort((a, b) => a.name.localeCompare(b.name, "de")).map(t => `<option value="${t.id}" ${st.team === t.id ? "selected" : ""}>${esc(t.name)}</option>`).join("")}</select>
+      <div class="seg" id="gmode">${[["all", "Alle"], ["played", "Gespielt"], ["open", "Offen"]].map(([k, l]) => `<button data-v="${k}" class="${st.mode === k ? "on" : ""}">${l}</button>`).join("")}</div></div>
+      ${gameList(games)}`;
+    $("#gteam").addEventListener("change", e => { st.team = e.target.value; render(); });
+    $("#gmode").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { st.mode = b.dataset.v; render(); }));
+  };
+  render();
+};
+
+views.liga = () => {
+  const gs = played();
+  const res = gs.filter(g => g.hg != null);
+  const homeW = res.filter(g => g.hg > g.gg), awayW = res.filter(g => g.gg > g.hg), draws = res.filter(g => g.hg === g.gg);
+  const goals = res.reduce((a, g) => a + g.hg + g.gg, 0), hgoals = res.reduce((a, g) => a + g.hg, 0);
+  const pick = (arr, f) => arr.length ? arr.reduce((a, b) => f(b) > f(a) ? b : a) : null;
+  const gl = g => g ? `<a class="link" href="#/game/${g.id}">${esc(T[g.home].short)} – ${esc(T[g.guest].short)} ${g.hg}:${g.gg}</a> <span class="muted small">${fdate(g.date, false)}</span>` : "–";
+  const all = Object.values(aggregate("all"));
+  const best7 = all.filter(x => x.sa >= 5).sort((a, b) => b.spct - a.spct || b.sg - a.sg)[0];
+  const bestGame = (() => { let b = null; for (const g of gs) for (const side of ["home", "guest"]) for (const a of g.lineups[side]) if (!b || a.g > b.a.g) b = {a, g}; return b; })();
+  // longest scoring run without conceding, across all games
+  let run = null;
+  for (const g of gs) { let side = null, n = 0; for (const e of g.events) { if (e[3] !== "goal" && e[3] !== "7m_goal") continue; if (e[4] === side) n++; else { side = e[4]; n = 1; } if (!run || n > run.n) run = {n, g, side}; } }
+  // per-team aggregates
+  const team = {};
+  for (const t of L.teams) team[t.id] = {sa: 0, sg: 0, pen: 0, warn: 0, disq: 0, games: 0, scorers: new Set()};
+  for (const g of gs) for (const side of ["home", "guest"]) { const x = team[g[side]]; x.games++; for (const a of g.lineups[side]) { x.sa += a.sa; x.sg += a.sg; x.pen += a.pen; x.warn += a.w; x.disq += a.d; if (a.g) x.scorers.add(a.p); } }
+  const tRows = L.teams.map(t => ({t, ...team[t.id]})).sort((a, b) => b.games && a.games ? (a.pen / a.games) - (b.pen / b.games) : 0);
+  $("#app").innerHTML = leagueHeader() + `
+    <div class="cards">
+      <div class="card"><div class="k">Spiele</div><div class="v">${res.length}</div><div class="d">von ${L.games.length} angesetzt</div></div>
+      <div class="card"><div class="k">Heimsiege</div><div class="v">${homeW.length}</div><div class="d">${pct(homeW.length, res.length)}</div></div>
+      <div class="card"><div class="k">Auswärtssiege</div><div class="v">${awayW.length}</div><div class="d">${pct(awayW.length, res.length)}</div></div>
+      <div class="card"><div class="k">Unentschieden</div><div class="v">${draws.length}</div><div class="d">${pct(draws.length, res.length)}</div></div>
+      <div class="card"><div class="k">Tore</div><div class="v">${goals}</div><div class="d">Ø ${res.length ? fmt1(goals / res.length) : "–"} pro Spiel</div></div>
+      <div class="card"><div class="k">Heim- / Gasttore</div><div class="v">${hgoals} / ${goals - hgoals}</div><div class="d">Ø ${res.length ? fmt1(hgoals / res.length) : "–"} / ${res.length ? fmt1((goals - hgoals) / res.length) : "–"}</div></div>
+    </div>
+    <div class="grid2">
+      <div><h2>Rekorde</h2><div class="tablewrap"><table class="records"><tbody>
+        <tr><td>Höchster Heimsieg</td><td>${gl(pick(homeW, g => g.hg - g.gg))}</td></tr>
+        <tr><td>Höchster Auswärtssieg</td><td>${gl(pick(awayW, g => g.gg - g.hg))}</td></tr>
+        <tr><td>Torreichstes Spiel</td><td>${gl(pick(res, g => g.hg + g.gg))}</td></tr>
+        <tr><td>Torärmstes Spiel</td><td>${gl(pick(res, g => -(g.hg + g.gg)))}</td></tr>
+        <tr><td>Meiste Tore in einem Spiel</td><td>${bestGame ? `${playerLink(bestGame.a.p)} – <b>${bestGame.a.g}</b> <span class="muted small">(${gl(bestGame.g)})</span>` : "–"}</td></tr>
+        <tr><td>Längste Torserie</td><td>${run ? `<b>${run.n}:0</b> ${esc(teamName(run.g[run.side]))} <span class="muted small">(${gl(run.g)})</span>` : "–"}</td></tr>
+        <tr><td>Bester 7m-Schütze <span class="small">(≥5 Versuche)</span></td><td>${best7 ? `${playerLink(best7.id)} – ${best7.sg}/${best7.sa} (${pct(best7.sg, best7.sa)})` : "–"}</td></tr>
+        <tr><td>Zuschauer gesamt</td><td>${gs.reduce((a, g) => a + (g.spectators || 0), 0)} <span class="muted small">(gemeldet in ${gs.filter(g => g.spectators).length} Spielen)</span></td></tr>
+      </tbody></table></div></div>
+      <div><h2>Tore nach Spielminute</h2><div class="panel">${barChart(minuteBuckets((g, e) => e[3] === "goal" ? "a" : "b"), {stacks: ["a", "b"], colors: ["var(--accent)", "var(--home)"], labels: ["Feldtore", "7m-Tore"]})}</div></div>
+    </div>
+    <h2>Mannschaftsvergleich</h2>
+    <div class="tablewrap"><table><thead><tr><th class="l">Mannschaft</th><th>Sp</th><th title="Siebenmeter Tore / Versuche">7m</th><th>7m %</th><th title="Zeitstrafen">2'</th><th>2' / Spiel</th><th>Verw.</th><th>Disq.</th><th title="Verschiedene Torschützen">Torschützen</th></tr></thead><tbody>
+    ${tRows.map(r => `<tr class="${state.favs.has(r.t.id) ? "fav" : ""}"><td class="l">${teamLink(r.t.id)}</td><td>${r.games}</td><td>${r.sg}/${r.sa}</td><td>${pct(r.sg, r.sa)}</td><td>${r.pen}</td><td>${r.games ? fmt1(r.pen / r.games) : "–"}</td><td>${r.warn}</td><td>${r.disq}</td><td>${r.scorers.size}</td></tr>`).join("")}
+    </tbody></table></div><p class="muted small">Sortiert nach Fairness (wenigste Zeitstrafen pro Spiel). Basis: ausgewertete Spielberichte.</p>`;
+};
+
+views.team = (id) => {
+  const t = T[id]; if (!t) return notFound();
+  const app = $("#app");
+  const games = L.games.filter(g => g.home === id || g.guest === id);
+  const pg = games.filter(g => g.parsed);
+  const render = () => {
+    const s = Object.values(aggregate("all")).filter(x => x.team === id);
+    sortPlayers(s, state.sort);
+    const gf = pg.reduce((a, g) => a + (g.home === id ? g.hg : g.gg), 0), ga = pg.reduce((a, g) => a + (g.home === id ? g.gg : g.hg), 0);
+    const sa = s.reduce((a, x) => a + x.sa, 0), sg = s.reduce((a, x) => a + x.sg, 0), pen = s.reduce((a, x) => a + x.pen, 0);
+    const fav = state.favs.has(id);
+    app.innerHTML = `<h1>${esc(t.name)} <button class="star ${fav ? "on" : ""}" id="favBtn" title="Als Favorit markieren">${fav ? "★" : "☆"}</button></h1>
+      <div class="chips"><span class="chip">${esc(L.name)} ${esc(L.season)}</span><span class="chip">Platz ${t.pos ?? "–"}</span><span class="chip">${t.pp}:${t.pm} Punkte</span><span class="chip">${t.won} S · ${t.draw} U · ${t.lost} N</span></div>
+      <div class="cards">
+        <div class="card"><div class="k">Tore / Spiel</div><div class="v">${pg.length ? fmt1(gf / pg.length) : "–"}</div><div class="d">${gf} Tore gesamt</div></div>
+        <div class="card"><div class="k">Gegentore / Spiel</div><div class="v">${pg.length ? fmt1(ga / pg.length) : "–"}</div><div class="d">${ga} Gegentore gesamt</div></div>
+        <div class="card"><div class="k">7m-Quote</div><div class="v">${pct(sg, sa)}</div><div class="d">${sg} von ${sa} verwandelt</div></div>
+        <div class="card"><div class="k">Zeitstrafen / Spiel</div><div class="v">${pg.length ? fmt1(pen / pg.length) : "–"}</div><div class="d">${pen} Zeitstrafen gesamt</div></div>
+        <div class="card"><div class="k">Eingesetzte Spieler</div><div class="v">${s.length}</div><div class="d">${s.filter(x => x.goals).length} verschiedene Torschützen</div></div>
+      </div>
+      <h2>Spieler</h2>${playerTable(s, {showTeam: false})}
+      <h2>Tore & Gegentore nach Spielminute</h2><div class="panel">${barChart(minuteBuckets((g, e) => (g.home === id || g.guest === id) ? (g[e[4]] === id ? "a" : "b") : null), {stacks: ["a", "b"], colors: ["var(--win)", "var(--loss)"], labels: ["Tore", "Gegentore"], grouped: true})}</div>
+      <h2>Spiele</h2>${gameList(games)}`;
+    bindTable(app, render);
+    $("#favBtn").addEventListener("click", () => { fav ? state.favs.delete(id) : state.favs.add(id); store.set("favs", [...state.favs]); render(); });
+  };
+  render();
+};
+
+views.player = (id) => {
+  id = +id; const p = P[id]; if (!p) return notFound();
+  const s = aggregate("all")[id];
+  const all = Object.values(aggregate("all")).sort((a, b) => b.goals - a.goals);
+  const rank = all.findIndex(x => x.goals === s.goals) + 1;
+  const teamRank = all.filter(x => x.team === p.team).findIndex(x => x.goals === s.goals) + 1;
+  const rows = [];
+  for (const g of played()) for (const side of ["home", "guest"]) { const a = g.lineups[side].find(v => v.p === id); if (a) rows.push({g, side, a}); }
+  const items = rows.map(r => ({label: fdate(r.g.date, false).slice(0, 5), title: `${T[r.g[r.side === "home" ? "guest" : "home"]].short}`, f: r.a.g - r.a.sg, s: r.a.sg}));
+  const mins = minuteBuckets((g, e) => e[5] === id ? (e[3] === "goal" ? "a" : "b") : null);
+  $("#app").innerHTML = `<h1>${esc(p.name)}</h1>
+    <div class="chips"><span class="chip">${teamLink(p.team)}</span><span class="chip">Trikot #${[...s.nums].join(" / ")}</span><span class="chip">${esc(L.name)} ${esc(L.season)}</span>
+    <span class="chip">Platz ${rank} der Torschützenliste</span><span class="chip">Nr. ${teamRank} im Team</span></div>
+    <div class="cards">
+      <div class="card"><div class="k">Spiele</div><div class="v">${s.games}</div></div>
+      <div class="card"><div class="k">Tore</div><div class="v">${s.goals}</div><div class="d">Ø ${fmt1(s.avg)} pro Spiel</div></div>
+      <div class="card"><div class="k">Feldtore</div><div class="v">${s.field}</div><div class="d">Ø ${fmt1(s.favg)} pro Spiel</div></div>
+      <div class="card"><div class="k">7m</div><div class="v">${s.sg}/${s.sa}</div><div class="d">${s.sa ? pct(s.sg, s.sa) + " Quote" : "keine Würfe"}</div></div>
+      <div class="card"><div class="k">Zeitstrafen</div><div class="v">${s.pen}</div><div class="d">${s.warn} Verw. · ${s.disq} Disq.</div></div>
+      <div class="card"><div class="k">Bestwert</div><div class="v">${s.best}</div><div class="d">Tore in einem Spiel</div></div>
+    </div>
+    <div class="grid2">
+      <div><h2>Tore pro Spiel</h2><div class="panel">${barChart(items, {stacks: ["f", "s"], colors: ["var(--accent)", "var(--home)"], labels: ["Feldtore", "7m-Tore"]})}</div></div>
+      <div><h2>Tore nach Spielminute</h2><div class="panel">${barChart(mins, {stacks: ["a", "b"], colors: ["var(--accent)", "var(--home)"], labels: ["Feldtore", "7m-Tore"]})}</div></div>
+    </div>
+    <h2>Einsätze</h2>
+    <div class="tablewrap"><table><thead><tr><th class="l">Datum</th><th class="l">Gegner</th><th class="l"></th><th>Ergebnis</th><th>Nr</th><th>Tore</th><th>Feld</th><th>7m</th><th>2'</th><th>Verw.</th><th>Disq.</th></tr></thead><tbody>
+    ${rows.map(({g, side, a}) => { const opp = side === "home" ? g.guest : g.home; const r = resultFor(g, p.team);
+      return `<tr><td class="l">${fdate(g.date)}</td><td class="l">${side === "home" ? "vs." : "@"} ${teamLink(opp)}</td><td class="l"><span class="res ${r}">${r}</span></td><td><a class="link" href="#/game/${g.id}">${g.hg}:${g.gg}</a></td><td>${esc(a.nr)}</td><td><b>${a.g}</b></td><td>${a.g - a.sg}</td><td>${a.sa ? a.sg + "/" + a.sa : "–"}</td><td>${a.pen || ""}</td><td>${a.w ? "●" : ""}</td><td>${a.d ? "●" : ""}</td></tr>`; }).join("")}
+    </tbody></table></div>
+    <p class="muted small">Spieler werden über Name + Mannschaft identifiziert. Gleichnamige Spieler in verschiedenen Mannschaften werden getrennt geführt.</p>`;
+};
+
+views.game = (gid) => {
+  const g = G[gid]; if (!g) return notFound();
+  if (!g.parsed) { $("#app").innerHTML = `<div class="panel empty">Für dieses Spiel liegt noch kein Spielbericht vor.</div>`; return; }
+  const box = side => {
+    const list = g.lineups[side];
+    const sum = k => list.reduce((a, x) => a + x[k], 0);
+    const unattr = g.events.filter(e => e[4] === side && !e[5] && (e[3] === "goal" || e[3] === "7m_goal")).length;
+    return `<div class="tablewrap"><table><thead><tr><th class="l">Nr</th><th class="l">Name</th><th>Tore</th><th>7m</th><th>2'</th><th>V</th><th>D</th></tr></thead><tbody>
+      ${list.map(a => `<tr><td class="l muted">${esc(a.nr)}</td><td class="l name">${playerLink(a.p)}</td><td><b>${a.g || ""}</b></td><td>${a.sa ? a.sg + "/" + a.sa : ""}</td><td>${a.pen || ""}</td><td>${a.w ? "●" : ""}</td><td>${a.d ? "●" : ""}</td></tr>`).join("")}
+      ${unattr ? `<tr><td></td><td class="l muted" title="Im Spielbericht ohne Spielername erfasst">ohne Spielerzuordnung</td><td><b>${unattr}</b></td><td></td><td></td><td></td><td></td></tr>` : ""}
+      </tbody><tfoot><tr><td></td><td class="l">Gesamt</td><td>${sum("g") + unattr}</td><td>${sum("sg")}/${sum("sa")}</td><td>${sum("pen")}</td><td>${sum("w")}</td><td>${sum("d")}</td></tr></tfoot></table></div>
+      ${g.officials[side].length ? `<p class="muted small">Offizielle: ${g.officials[side].map(o => `${o.code}: ${esc(o.name)}`).join(" · ")}</p>` : ""}`;
+  };
+  const label = {goal: "Tor", "7m_goal": "7m-Tor", "7m_miss": "7m verworfen", "2min": "2 Minuten", warning: "Verwarnung", disq: "Disqualifikation", timeout: "Auszeit", number_change: "Trikotwechsel"};
+  const badge = {"7m_goal": "b-7m", "7m_miss": "b-miss", "2min": "b-2min", warning: "b-warn", disq: "b-disq", timeout: "b-to"};
+  // biggest lead per team & longest run
+  let maxH = 0, maxG = 0, run = {n: 0}, cur = {side: null, n: 0};
+  for (const e of g.events) { if (e[1] == null) continue; maxH = Math.max(maxH, e[1] - e[2]); maxG = Math.max(maxG, e[2] - e[1]);
+    if (e[3] === "goal" || e[3] === "7m_goal") { cur = cur.side === e[4] ? {side: e[4], n: cur.n + 1} : {side: e[4], n: 1}; if (cur.n > run.n) run = {...cur}; } }
+  const app = $("#app");
+  const st = {filter: "all"};
+  const renderTimeline = () => {
+    const ev = g.events.filter(e => st.filter === "all" || (st.filter === "goals" ? ["goal", "7m_goal", "7m_miss"].includes(e[3]) : ["2min", "warning", "disq", "timeout"].includes(e[3])));
+    $("#tl").innerHTML = ev.map(e => {
+      const who = e[5] ? `${playerLink(e[5])} <span class="muted small">(${esc(e[6])})</span>` : e[3] === "timeout" ? esc(teamName(g[e[4]])) : (e[3] === "goal" || e[3] === "7m_goal") && e[4] ? `<span class="muted">${esc(teamName(g[e[4]]))} – ohne Spielerzuordnung</span>` : esc(e[7] || "");
+      const offName = !e[5] && e[6] ? ` <span class="muted small">Offizieller ${esc(e[6])}, ${esc(teamName(g[e[4]]))}</span>` : "";
+      return `<div class="ev ${e[4] || ""}"><span class="t">${e[0]}</span><span class="sc">${e[1] != null ? e[1] + ":" + e[2] : ""}</span><span>${label[e[3]] || ""}${badge[e[3]] ? ` <span class="badge ${badge[e[3]]}">${e[3] === "2min" ? "2'" : e[3] === "warning" ? "Gelb" : e[3] === "disq" ? "Rot" : e[3] === "7m_goal" ? "7m" : e[3] === "7m_miss" ? "7m ✗" : "T"}</span>` : ""} ${who}${offName}</span></div>`;
+    }).join("") || `<div class="empty">Keine Ereignisse.</div>`;
+    app.querySelectorAll("#tlf button").forEach(b => b.classList.toggle("on", b.dataset.v === st.filter));
+  };
+  app.innerHTML = `<div class="panel scoreboard">
+      <div><div class="team">${teamLink(g.home)}</div><div class="muted small">Heim</div></div>
+      <div><div class="big">${g.hg}:${g.gg}</div><div class="muted">Halbzeit ${g.hh}:${g.gh}</div></div>
+      <div><div class="team">${teamLink(g.guest)}</div><div class="muted small">Gast</div></div>
+    </div>
+    <div class="chips" style="justify-content:center"><span class="chip">${fdate(g.date)} · ${esc(g.time)}</span><span class="chip">Spiel-Nr. ${esc(g.no)}</span><span class="chip">${esc(g.venue)}, ${esc(g.town)}</span>
+      ${g.spectators ? `<span class="chip">${g.spectators} Zuschauer</span>` : ""}<span class="chip"><a href="${esc(g.report)}" target="_blank" rel="noopener">Spielbericht (PDF) ↗</a></span></div>
+    <div class="cards">
+      <div class="card"><div class="k">Höchste Führung Heim</div><div class="v">${maxH ? "+" + maxH : "–"}</div></div>
+      <div class="card"><div class="k">Höchste Führung Gast</div><div class="v">${maxG ? "+" + maxG : "–"}</div></div>
+      <div class="card"><div class="k">Längster Lauf</div><div class="v">${run.n ? run.n + ":0" : "–"}</div><div class="d">${run.side ? esc(teamName(g[run.side])) : ""}</div></div>
+      <div class="card"><div class="k">Zeitstrafen</div><div class="v">${g.lineups.home.reduce((a, x) => a + x.pen, 0)} : ${g.lineups.guest.reduce((a, x) => a + x.pen, 0)}</div><div class="d">Spieler Heim : Gast</div></div>
+      <div class="card"><div class="k">7m</div><div class="v">${g.lineups.home.reduce((a, x) => a + x.sg, 0)}/${g.lineups.home.reduce((a, x) => a + x.sa, 0)} : ${g.lineups.guest.reduce((a, x) => a + x.sg, 0)}/${g.lineups.guest.reduce((a, x) => a + x.sa, 0)}</div><div class="d">Tore/Versuche Heim : Gast</div></div>
+    </div>
+    <h2>Spielverlauf</h2><div class="panel">${scoreChart(g)}</div>
+    <div class="grid2"><div><h2>${esc(teamName(g.home))}</h2>${box("home")}</div><div><h2>${esc(teamName(g.guest))}</h2>${box("guest")}</div></div>
+    <h2>Ticker</h2><div class="toolbar"><div class="seg" id="tlf"><button data-v="all">Alle</button><button data-v="goals">Tore & 7m</button><button data-v="pen">Strafen & Auszeiten</button></div></div>
+    <div class="panel timeline" id="tl"></div>`;
+  app.querySelectorAll("#tlf button").forEach(b => b.addEventListener("click", () => { st.filter = b.dataset.v; renderTimeline(); }));
+  renderTimeline();
+};
+
+views.vergleich = (ids) => {
+  const list = (ids || "").split(",").map(Number).filter(i => P[i]);
+  if (!list.length) return notFound();
+  const s = aggregate("all");
+  const metrics = [["games", "Spiele", 1], ["goals", "Tore", 1], ["avg", "Tore / Spiel", 1, fmt1], ["field", "Feldtore", 1], ["favg", "Feldtore / Spiel", 1, fmt1],
+    ["sg", "7m-Tore", 1], ["sa", "7m geworfen", 0], ["spct", "7m-Quote", 1, v => v < 0 ? "–" : Math.round(v * 100) + " %"], ["best", "Bestwert (Tore)", 1], ["pen", "Zeitstrafen", -1], ["warn", "Verwarnungen", -1], ["disq", "Disqualifikationen", -1]];
+  const colors = ["var(--accent)", "var(--home)", "var(--win)", "var(--guest)"];
+  // cumulative goals by matchday index of each player
+  const series = list.map(id => { let c = 0; const pts = [0]; for (const g of played()) for (const side of ["home", "guest"]) { const a = g.lineups[side].find(v => v.p === id); if (a) { c += a.g; pts.push(c); } } return pts; });
+  const w = 640, h = 220, pad = 30, maxX = Math.max(...series.map(s => s.length - 1), 1), maxY = Math.max(...series.flat(), 1);
+  let svg = `<svg viewBox="0 0 ${w} ${h + 20}" width="100%">`;
+  for (let i = 0; i <= maxX; i++) svg += `<text x="${pad + i / maxX * (w - pad - 10)}" y="${h + 14}" text-anchor="middle">${i}</text>`;
+  for (let v = 0; v <= maxY; v += Math.max(1, Math.ceil(maxY / 5))) { const y = h - v / maxY * (h - 10); svg += `<line x1="${pad}" x2="${w - 10}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${pad - 6}" y="${y + 4}" text-anchor="end">${v}</text>`; }
+  series.forEach((pts, j) => svg += `<polyline fill="none" stroke="${colors[j]}" stroke-width="2.5" points="${pts.map((v, i) => `${pad + i / maxX * (w - pad - 10)},${h - v / maxY * (h - 10)}`).join(" ")}"/>`);
+  svg += `</svg><div class="legend">${list.map((id, j) => `<span><i style="background:${colors[j]}"></i>${esc(P[id].name)}</span>`).join("")}<span>x-Achse: Einsätze</span></div>`;
+  $("#app").innerHTML = `<h1>Spielervergleich</h1><div class="sub">${esc(L.name)} ${esc(L.season)}</div>
+    <div class="tablewrap"><table><thead><tr><th class="l"></th>${list.map(id => `<th>${playerLink(id)}<div class="tm" style="text-transform:none">${esc(T[P[id].team].short)}</div></th>`).join("")}</tr></thead><tbody>
+    ${metrics.map(([k, l, dir, f]) => { const vals = list.map(id => s[id][k]); const best = dir === 0 ? null : (dir > 0 ? Math.max(...vals) : Math.min(...vals));
+      return `<tr><td class="l muted">${l}</td>${vals.map(v => `<td class="${list.length > 1 && v === best ? "best" : ""}">${f ? f(v) : v}</td>`).join("")}</tr>`; }).join("")}
+    </tbody></table></div>
+    <h2>Torentwicklung (kumuliert)</h2><div class="panel">${svg}</div>`;
+};
+
+function notFound() { $("#app").innerHTML = `<div class="panel empty">Seite nicht gefunden. <a class="link" href="#/spieler">Zur Übersicht</a></div>`; }
+
+// ---------- routing / chrome ----------
+const LIST_VIEWS = ["spieler", "tabelle", "spiele", "liga"];
+const OWNER = {team: {}, player: {}, game: {}};   // entity id -> league
+const GENDER = {M: "Männer", F: "Frauen"};
+const leagueLabel = l => l.short.replace(/^[A-Za-z0-9]+-/, "").replace(/-[A-Z]+$/, "").replace(/^(\d)BK/, "$1. BK").replace(/-/g, " ");
+function ownerOf(view, arg) {
+  if (!arg) return null;
+  if (view === "team") return OWNER.team[arg];
+  if (view === "player") return OWNER.player[arg];
+  if (view === "game") return OWNER.game[arg];
+  if (view === "vergleich") return OWNER.player[arg.split(",")[0]];
+  return null;
+}
+function renderLeagueNav(view) {
+  const nav = $("#leagues");
+  if (DATA.leagues.length < 2) { nav.style.display = "none"; return; }
+  const target = LIST_VIEWS.includes(view) ? view : "spieler";
+  const groups = {};
+  for (const l of DATA.leagues) (groups[l.short.split("-")[0]] ??= []).push(l);
+  nav.innerHTML = Object.entries(groups).map(([g, ls]) => `<div class="lgrow"><b>${esc(GENDER[g] || g)}</b>${ls.map(l => {
+    const fav = l.teams.some(t => state.favs.has(t.id));
+    return `<a href="#/${encodeURIComponent(l.short)}/${target}" class="${l === L ? "active" : ""} ${fav ? "hasfav" : ""}" title="${esc(l.name)}">${esc(leagueLabel(l))}</a>`;
+  }).join("")}</div>`).join("");
+  nav.querySelector("a.active")?.scrollIntoView({block: "nearest", inline: "nearest"});
+}
+function route() {
+  const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
+  let lg = DATA.leagues.find(l => l.short === parts[0]);
+  if (lg) parts.shift();
+  const [view = "spieler", arg] = parts;
+  lg = lg || ownerOf(view, arg);
+  if (lg && lg !== L) { setLeague(lg.key); state.team = ""; }
+  document.querySelectorAll("#tabs a").forEach(a => {
+    a.href = `#/${encodeURIComponent(L.short)}/${a.dataset.tab}`;
+    a.classList.toggle("active", a.dataset.tab === view);
+  });
+  $("#brand").href = `#/${encodeURIComponent(L.short)}/spieler`;
+  renderLeagueNav(view);
+  (views[view] || notFound)(arg);
+  updateCmpBar();
+  if (!["spieler"].includes(view)) window.scrollTo(0, 0);
+}
+function initSearch() {
+  const q = $("#q"), box = $("#suggest");
+  const allTeams = DATA.leagues.flatMap(l => l.teams.map(t => ({t, l})));
+  const teamOf = Object.fromEntries(allTeams.map(x => [x.t.id, x.t]));
+  const allPlayers = DATA.leagues.flatMap(l => l.players.map(p => ({p, l})));
+  const multi = DATA.leagues.length > 1;
+  const lgTag = l => multi ? ` · ${esc(GENDER[l.short.split("-")[0]]?.[0] || "")} ${esc(leagueLabel(l))}` : "";
+  const byCurrent = (a, b) => (b.l === L) - (a.l === L);
+  let idx = -1;
+  q.addEventListener("input", () => {
+    const v = q.value.trim().toLowerCase(); idx = -1;
+    if (v.length < 2) { box.style.display = "none"; return; }
+    const ts = allTeams.filter(({t}) => t.name.toLowerCase().includes(v) || t.short.toLowerCase().includes(v)).sort(byCurrent).slice(0, 5)
+      .map(({t, l}) => `<a href="#/team/${t.id}"><span>${esc(t.name)}</span><small>Mannschaft${lgTag(l)}</small></a>`);
+    const ps = allPlayers.filter(({p}) => p.name.toLowerCase().includes(v)).sort(byCurrent).slice(0, 12)
+      .map(({p, l}) => `<a href="#/player/${p.id}"><span>${esc(p.name)}</span><small>${esc(teamOf[p.team]?.short)}${lgTag(l)}</small></a>`);
+    box.innerHTML = ts.concat(ps).join("") || `<div class="empty">Keine Treffer</div>`;
+    box.style.display = "block";
+  });
+  q.addEventListener("keydown", e => {
+    const items = [...box.querySelectorAll("a")]; if (!items.length) return;
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); idx = (idx + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length; items.forEach((a, i) => a.classList.toggle("active", i === idx)); }
+    if (e.key === "Enter") { (items[idx] || items[0]).click(); }
+    if (e.key === "Escape") box.style.display = "none";
+  });
+  box.addEventListener("click", () => { box.style.display = "none"; q.value = ""; });
+  document.addEventListener("click", e => { if (!e.target.closest(".search")) box.style.display = "none"; });
+}
+function init() {
+  document.documentElement.classList.remove("nojs");
+  if (store.get("theme", "dark") === "light") document.documentElement.classList.add("light");
+  $("#themeBtn").addEventListener("click", () => { const l = document.documentElement.classList.toggle("light"); store.set("theme", l ? "light" : "dark"); });
+  for (const l of DATA.leagues) {
+    l.teams.forEach(t => OWNER.team[t.id] = l);
+    l.players.forEach(p => OWNER.player[p.id] = l);
+    l.games.forEach(g => OWNER.game[g.id] = l);
+  }
+  setLeague(store.get("league", DATA.leagues[0].key));
+  $("#cmpgo").addEventListener("click", () => { location.hash = "#/vergleich/" + [...state.compare].join(","); });
+  $("#cmpclear").addEventListener("click", () => { state.compare.clear(); document.querySelectorAll("input[data-cmp]").forEach(c => c.checked = false); updateCmpBar(); });
+  $("#foot").innerHTML = `Daten: <a class="link" href="https://www.handball4all.de" target="_blank" rel="noopener">handball4all</a> (Spielplan, Tabelle, Spielberichte). Statistiken automatisch aus den offiziellen Spielberichten erstellt – ohne Gewähr.
+    Stand der Auswertung: ${new Date(DATA.generated).toLocaleString("de-DE")}. Inspiriert von handballstatistiken.de.`;
+  initSearch();
+  window.addEventListener("hashchange", route);
+  route();
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+__pycache__/
+data/reports/
+data/handball.db
+_site/
