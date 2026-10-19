@@ -187,10 +187,10 @@ def store_league(con: sqlite3.Connection, cfg: dict, season: str, mode: str, ord
     for table in ("games", "standings", "teams"):
         con.execute(f"DELETE FROM {table} WHERE league_key=?", (key,))
 
-    con.execute("INSERT OR REPLACE INTO leagues VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+    con.execute("INSERT OR REPLACE INTO leagues (league_key, og, lid, short, name, area, season, actualized, fetched_at, portal_url, sort_order, nav_end) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                 (key, og, lid, head["sname"], head["name"], cfg.get("area") or head.get("headline1"), season,
                  head.get("actualized", ""), datetime.now().isoformat(timespec="seconds"), cfg.get("portal_url", ""),
-                 order))
+                 order, int(cfg.get("nav_end", False))))
     for tid, name in teams.items():
         short = next((s for s, i in short_to_id.items() if i == tid and s != name), name)
         con.execute("INSERT OR REPLACE INTO teams VALUES (?,?,?,?)", (tid, key, name, short))
@@ -266,6 +266,8 @@ def main() -> None:
     con.executescript(SCHEMA)
     if "sort_order" not in [r[1] for r in con.execute("PRAGMA table_info(leagues)")]:
         con.execute("ALTER TABLE leagues ADD COLUMN sort_order INTEGER")
+    if "nav_end" not in [r[1] for r in con.execute("PRAGMA table_info(leagues)")]:
+        con.execute("ALTER TABLE leagues ADD COLUMN nav_end INTEGER NOT NULL DEFAULT 0")
     leagues = list(cfg.get("leagues", []))
     for district in cfg.get("districts", []):
         leagues += discover_leagues(district)

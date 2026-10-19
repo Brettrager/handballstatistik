@@ -40,8 +40,8 @@ Notes:
   Re-enable under **Actions** with one click.
 - If a league fails to update, the other leagues are still published and the run is marked failed
   (GitHub sends an e-mail).
-- New season: update `season` and the `lid` of the individual leagues (M-LL-2-BW, mB-OL-2-BW,
-  mB-BOL-1-SRM) in `leagues.json`; district leagues are discovered automatically.
+- New season: update `season` and the `lid` of all individual leagues in `leagues.json`
+  (including the four men's/women's Oberliga divisions); district leagues are discovered automatically.
 
 Viewers that don't run JavaScript (e.g. the iOS Mail/Files preview) get a pre-rendered,
 read-only fallback (scorers, standings, results). The interactive app replaces it when
@@ -88,6 +88,8 @@ Leagues that are no longer configured are removed from the database on the next 
 ## Site navigation
 
 - League bar (Männer / Frauen / Jugend) in the header; a ★ marks leagues that contain a favourite team.
+- The four adult Oberliga divisions have `nav_end: true` in `leagues.json`: they appear at the
+  end of their respective Männer/Frauen row, separated from the existing leagues by a vertical line.
 - URLs carry the league, e.g. `#/M-BL-2-SRM/tabelle`, so links can be shared. Team, player and game
   links (`#/team/…`, `#/player/…`, `#/game/…`) switch to the right league automatically.
 - The search box finds players and teams across all leagues.

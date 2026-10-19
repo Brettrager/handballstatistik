@@ -15,6 +15,30 @@
       "og": 216,
       "lid": 167696,
       "area": "Stuttgart-Rems-Murr"
+    },
+    {
+      "og": 216,
+      "lid": 161131,
+      "area": "Baden-Württemberg",
+      "nav_end": true
+    },
+    {
+      "og": 216,
+      "lid": 161136,
+      "area": "Baden-Württemberg",
+      "nav_end": true
+    },
+    {
+      "og": 216,
+      "lid": 161206,
+      "area": "Baden-Württemberg",
+      "nav_end": true
+    },
+    {
+      "og": 216,
+      "lid": 161211,
+      "area": "Baden-Württemberg",
+      "nav_end": true
     }
   ],
   "districts": [

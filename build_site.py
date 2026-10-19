@@ -67,6 +67,7 @@ def export(con: sqlite3.Connection) -> dict:
         leagues.append({
             "key": key, "short": lg["short"], "name": lg["name"], "area": lg["area"], "season": lg["season"],
             "actualized": lg["actualized"], "fetched": lg["fetched_at"], "portal": lg["portal_url"],
+            "nav_end": bool(lg["nav_end"]),
             "teams": teams, "players": players, "games": games,
         })
     return {"generated": datetime.now().isoformat(timespec="minutes"), "leagues": leagues}

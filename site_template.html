@@ -43,6 +43,7 @@ header.top{position:sticky;top:0;z-index:20;background:var(--bg2);border-bottom:
 nav.leagues{max-width:1280px;margin:0 auto;padding:0 16px 8px;display:flex;flex-direction:column;gap:6px}
 .lgrow{display:flex;gap:6px;align-items:center;overflow-x:auto;scrollbar-width:none}
 .lgrow::-webkit-scrollbar{display:none}
+.lgsep{width:1px;height:20px;background:var(--muted);opacity:.5;margin:0 5px;flex:none}
 .lgrow b{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);min-width:58px;flex:none}
 .lgrow a{padding:3px 11px;border:1px solid var(--line);border-radius:999px;font-size:12px;white-space:nowrap;color:var(--muted);flex:none}
 .lgrow a:hover{border-color:var(--accent);color:var(--text)}
@@ -689,9 +690,11 @@ function renderLeagueNav(view) {
   const target = LIST_VIEWS.includes(view) ? view : "spieler";
   const groups = {};
   for (const g of Object.keys(GENDER)) for (const l of DATA.leagues) if (lgGroup(l) === g) (groups[g] ??= []).push(l);
-  nav.innerHTML = Object.entries(groups).map(([g, ls]) => `<div class="lgrow"><b>${esc(GENDER[g] || g)}</b>${ls.map(l => {
+  for (const ls of Object.values(groups)) ls.sort((a, b) => Number(!!a.nav_end) - Number(!!b.nav_end));
+  nav.innerHTML = Object.entries(groups).map(([g, ls]) => `<div class="lgrow"><b>${esc(GENDER[g] || g)}</b>${ls.map((l, i) => {
     const fav = l.teams.some(t => state.favs.has(t.id));
-    return `<a href="#/${encodeURIComponent(l.short)}/${target}" class="${l === L ? "active" : ""} ${fav ? "hasfav" : ""}" title="${esc(l.name)}">${esc(leagueLabel(l))}</a>`;
+    const separator = i > 0 && l.nav_end && !ls[i - 1].nav_end ? '<span class="lgsep" role="separator" aria-orientation="vertical"></span>' : "";
+    return `${separator}<a href="#/${encodeURIComponent(l.short)}/${target}" class="${l === L ? "active" : ""} ${fav ? "hasfav" : ""}" title="${esc(l.name)}">${esc(leagueLabel(l))}</a>`;
   }).join("")}</div>`).join("");
   nav.querySelector("a.active")?.scrollIntoView({block: "nearest", inline: "nearest"});
 }
