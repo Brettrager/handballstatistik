@@ -80,10 +80,13 @@ JavaScript is available.
   (case-sensitive; currently all men's/women's leagues except the cups, i.e. no youth or M40).
   League IDs change every season, so this keeps working without edits.
 - `leagues`: individual leagues (`lid` from `.../league?ogId=216&lId=167301`), e.g. M-LL-2-BW and the
-  youth league mB-OL-2-BW. Youth leagues get their own "Jugend" row in the navigation; the game length
+  youth leagues mB-OL-2-BW, mB-BOL-1-SRM and mC-BL-2-SRM. Youth leagues get their own "Jugend" row in the navigation; the game length
   (40/50/60 min) is detected from the reports, so charts adapt automatically.
 
 Leagues that are no longer configured are removed from the database on the next run.
+Match-specific player identities can be supplied under `report_overrides`, keyed by report ID,
+side (`home`/`guest`) and shirt number. Changes invalidate only that report's parsed cache;
+subsequent updates reuse it as usual. These identities also apply when re-parsing or refreshing.
 
 ## Site navigation
 

@@ -133,13 +133,16 @@ def _assign_columns(header_spans: list[Span]) -> dict[str, float]:
     return {k: v for k, v in cols.items() if v is not None}
 
 
-def _parse_roster_row(row: list[Span], cols: dict[str, float]) -> RosterEntry | None:
+def _parse_roster_row(row: list[Span], cols: dict[str, float],
+                      player_names: dict[str, str] | None = None) -> RosterEntry | None:
     code_span = row[0]
     if code_span.x0 > 75:
         return None
     code = code_span.text.strip()
     name_spans = [s for s in row[1:] if s.x0 < 200]
     raw_name = " ".join(s.text.strip() for s in name_spans).strip()
+    if player_names and code in player_names:
+        raw_name = player_names[code]
     if not raw_name or raw_name.startswith("N.N."):
         return None
     changes = ""
@@ -217,7 +220,9 @@ def _parse_event(line: str, home_names: set[str], guest_names: set[str], home_fu
     return ev
 
 
-def parse_report(path: str, home_short: str = "", guest_short: str = "") -> dict:
+def parse_report(path: str, home_short: str = "", guest_short: str = "",
+                 player_overrides: dict[str, dict[str, str]] | None = None) -> dict:
+    player_overrides = player_overrides or {}
     doc = pymupdf.open(path)
     pages = _spans_by_page(doc)
 
@@ -255,7 +260,7 @@ def parse_report(path: str, home_short: str = "", guest_short: str = "") -> dict
                     if any(s.text.strip() == "Strafe" for s in row):
                         cols = _assign_columns(header_buf)
                     continue
-                entry = _parse_roster_row(row, cols)
+                entry = _parse_roster_row(row, cols, player_overrides.get(side))
                 if entry:
                     rosters[side]["entries"].append(entry)
             elif section == "log":
@@ -265,10 +270,22 @@ def parse_report(path: str, home_short: str = "", guest_short: str = "") -> dict
 
     info = _parse_header(header_lines)
     home_full, guest_full = rosters["home"]["team"], rosters["guest"]["team"]
+    for override_side, names in player_overrides.items():
+        entries = rosters[override_side]["entries"]
+        for number, name in names.items():
+            if not any(e.code == number and e.name == name and not e.official for e in entries):
+                raise ValueError(f"Player override does not match roster: {override_side} #{number}")
     home_names = {e.name for e in rosters["home"]["entries"]}
     guest_names = {e.name for e in rosters["guest"]["entries"]}
     events = []
     for line in log_lines:
+        for override_side, names in player_overrides.items():
+            teams = (home_full, home_short) if override_side == "home" else (guest_full, guest_short)
+            for number, name in names.items():
+                for team in set(teams) - {""}:
+                    line = re.sub(
+                        rf"Spieler {re.escape(number)}, {re.escape(team)}(?=$|\s+\d)",
+                        lambda m, n=name, nr=number, t=team: f"{n} ({nr}, {t})", line)
         ev = _parse_event(line, home_names, guest_names, home_full, guest_full, home_short, guest_short)
         if ev:
             events.append(ev)

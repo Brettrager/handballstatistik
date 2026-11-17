@@ -120,21 +120,28 @@ def download_report(sgid: str, refresh: bool) -> Path | None:
 STATS = {"cached": 0, "new": 0}
 
 
-def get_report(g: dict, mode: str) -> dict | None:
+def get_report(g: dict, mode: str, player_overrides: dict | None = None) -> dict | None:
     """Parsed report for a game: from the JSON cache, or downloaded + parsed once and cached."""
     sgid = g["sGID"]
     cache = PARSED / f"{sgid}.json"
+    player_overrides = player_overrides or {}
     if cache.exists() and mode == "incremental":
-        STATS["cached"] += 1
-        return json.loads(cache.read_text(encoding="utf-8"))
+        rep = json.loads(cache.read_text(encoding="utf-8"))
+        if rep.get("player_overrides", {}) == player_overrides:
+            STATS["cached"] += 1
+            return rep
     pdf = download_report(sgid, refresh=mode == "refresh")
     if not pdf:
         return None
     try:
-        rep = parse_report(str(pdf), g["gHomeTeam"], g["gGuestTeam"])
+        rep = parse_report(str(pdf), g["gHomeTeam"], g["gGuestTeam"], player_overrides)
     except Exception as exc:  # keep going; one broken report must not block the league
+        if player_overrides:
+            raise
         print(f"  ! failed to parse {pdf.name}: {exc}")
         return None
+    if player_overrides:
+        rep["player_overrides"] = player_overrides
     cache.write_text(json.dumps(rep, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     STATS["new"] += 1
     return rep
@@ -161,7 +168,8 @@ def resolve_team_ids(games: list[dict], teams: dict[str, str], parsed: dict[str,
     return short_to_id
 
 
-def store_league(con: sqlite3.Connection, cfg: dict, season: str, mode: str, order: int = 0) -> None:
+def store_league(con: sqlite3.Connection, cfg: dict, season: str, mode: str, order: int = 0,
+                 report_overrides: dict | None = None) -> None:
     og, lid = cfg["og"], cfg["lid"]
     key = f"{og}-{lid}"
     if not cfg.get("portal_url"):
@@ -175,7 +183,7 @@ def store_league(con: sqlite3.Connection, cfg: dict, season: str, mode: str, ord
 
     parsed: dict[str, dict] = {}
     for g in games:
-        if g.get("sGID") and (rep := get_report(g, mode)):
+        if g.get("sGID") and (rep := get_report(g, mode, (report_overrides or {}).get(str(g["sGID"])))):
             parsed[g["sGID"]] = rep
 
     short_to_id = resolve_team_ids(games, teams, parsed)
@@ -278,7 +286,7 @@ def main() -> None:
             continue
         seen.add(key)
         try:
-            store_league(con, league, cfg["season"], mode, order)
+            store_league(con, league, cfg["season"], mode, order, cfg.get("report_overrides"))
             con.commit()
         except Exception as exc:  # one failing league must not block the others
             con.rollback()
